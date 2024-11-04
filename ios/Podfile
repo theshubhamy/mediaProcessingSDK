@@ -1,12 +1,23 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
+# Resolve script with node to allow for hoisting
+def node_require(script)
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+       '#{script}',
+       {paths: [process.argv[1]]},
+     )", __dir__]).strip
+end
 
+node_require('react-native/scripts/react_native_pods.rb')
+node_require('react-native-permissions/scripts/setup.rb')
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
+
+setup_permissions([
+  'PhotoLibrary',
+  'PhotoLibraryAddOnly',
+  "MediaLibrary"
+])
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -17,6 +28,14 @@ end
 target 'mediaProcessingSDK' do
   config = use_native_modules!
   pod 'RNFS', :path => '../node_modules/react-native-fs'
+  pod 'react-native-video', path: '../node_modules/react-native-video'
+
+  if ENV['RNV_SAMPLE_ENABLE_ADS']
+    $RNVideoUseGoogleIMA = true
+  end
+  if ENV['RNV_SAMPLE_VIDEO_CACHING']
+    $RNVideoUseVideoCaching = true
+  end
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

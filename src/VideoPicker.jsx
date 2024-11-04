@@ -10,6 +10,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import Video from 'react-native-video';
 import mergeVideos from './VideoMerger';
 import RNFS from 'react-native-fs';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 const {width, height} = Dimensions.get('window');
 
 const VideoPicker = () => {
@@ -48,6 +49,11 @@ const VideoPicker = () => {
 
       // Call the native merge function
       const result = await mergeVideos(videoPaths, outputPath);
+      CameraRoll.saveAsset(result, {
+        type: 'video',
+        album: 'Hiyvee',
+      });
+
       setMergedVideoPath(result);
     } catch (error) {
       console.error('Failed to merge videos:', error);
@@ -56,19 +62,20 @@ const VideoPicker = () => {
 
   return (
     <View style={styles.container}>
-      {videos?.map((item, index) => {
-        return (
-          <View key={index}>
-            <Video
-              source={{uri: item?.uri}}
-              style={styles.thumbnail}
-              controls
-              muted
-              resizeMode="cover"
-            />
-          </View>
-        );
-      })}
+      {mergedVideoPath === null &&
+        videos?.map((item, index) => {
+          return (
+            <View key={index}>
+              <Video
+                source={{uri: item?.uri}}
+                style={styles.thumbnail}
+                controls
+                muted
+                resizeMode="cover"
+              />
+            </View>
+          );
+        })}
       {videos?.length === 0 ? (
         <TouchableOpacity style={styles.button} onPress={pickVideos}>
           <Text style={styles.buttonText}>Pick Videos</Text>
@@ -81,7 +88,13 @@ const VideoPicker = () => {
       {mergedVideoPath && (
         <View style={styles.resultContainer}>
           <Text>Output Video Path:</Text>
-          <Text style={styles.resultPath}>{mergedVideoPath}</Text>
+          <Video
+            source={{uri: mergedVideoPath}}
+            style={styles.thumbnail}
+            controls
+            muted
+            resizeMode="cover"
+          />
         </View>
       )}
     </View>
