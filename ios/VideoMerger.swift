@@ -21,7 +21,10 @@ class VideoMerger: NSObject {
     }
 
     @objc
-    func mergeVideos(_ videoPaths: [String], outputPath: String, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
+    func mergeVideos(
+        _ videoPaths: [String], outputPath: String, resolver: @escaping RCTPromiseResolveBlock,
+        rejecter: @escaping RCTPromiseRejectBlock
+    ) {
         // Clean up any existing export session
         cleanupResources()
 
@@ -40,7 +43,8 @@ class VideoMerger: NSObject {
         for videoPath in videoPaths {
             autoreleasepool {
                 let videoURL = URL(fileURLWithPath: videoPath)
-                let asset = AVURLAsset(url: videoURL, options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
+                let asset = AVURLAsset(
+                    url: videoURL, options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
                 assets.append(asset)
             }
         }
@@ -59,26 +63,35 @@ class VideoMerger: NSObject {
 
                 var isReadyForTracks = false
                 do {
-                    isReadyForTracks = try asset.statusOfValue(forKey: "tracks", error: nil) == .loaded
+                    isReadyForTracks =
+                        try asset.statusOfValue(forKey: "tracks", error: nil) == .loaded
                 } catch let trackError {
                     error = trackError
                     return
                 }
 
                 guard isReadyForTracks, !asset.tracks.isEmpty else {
-                    error = NSError(domain: "VideoMerger", code: -1,
-                                  userInfo: [NSLocalizedDescriptionKey: "Could not load video at index \(index)"])
+                    error = NSError(
+                        domain: "VideoMerger", code: -1,
+                        userInfo: [
+                            NSLocalizedDescriptionKey: "Could not load video at index \(index)"
+                        ])
                     return
                 }
 
                 // Handle video track
                 if let videoTrack = asset.tracks(withMediaType: .video).first {
                     autoreleasepool {
-                        guard let compositionTrack = mixComposition.addMutableTrack(
-                            withMediaType: .video,
-                            preferredTrackID: kCMPersistentTrackID_Invalid) else {
-                            error = NSError(domain: "VideoMerger", code: -1,
-                                          userInfo: [NSLocalizedDescriptionKey: "Failed to create video track"])
+                        guard
+                            let compositionTrack = mixComposition.addMutableTrack(
+                                withMediaType: .video,
+                                preferredTrackID: kCMPersistentTrackID_Invalid)
+                        else {
+                            error = NSError(
+                                domain: "VideoMerger", code: -1,
+                                userInfo: [
+                                    NSLocalizedDescriptionKey: "Failed to create video track"
+                                ])
                             return
                         }
 
@@ -97,11 +110,16 @@ class VideoMerger: NSObject {
                 // Handle audio track
                 if let audioTrack = asset.tracks(withMediaType: .audio).first {
                     autoreleasepool {
-                        guard let compositionAudioTrack = mixComposition.addMutableTrack(
-                            withMediaType: .audio,
-                            preferredTrackID: kCMPersistentTrackID_Invalid) else {
-                            error = NSError(domain: "VideoMerger", code: -1,
-                                          userInfo: [NSLocalizedDescriptionKey: "Failed to create audio track"])
+                        guard
+                            let compositionAudioTrack = mixComposition.addMutableTrack(
+                                withMediaType: .audio,
+                                preferredTrackID: kCMPersistentTrackID_Invalid)
+                        else {
+                            error = NSError(
+                                domain: "VideoMerger", code: -1,
+                                userInfo: [
+                                    NSLocalizedDescriptionKey: "Failed to create audio track"
+                                ])
                             return
                         }
 
@@ -132,9 +150,11 @@ class VideoMerger: NSObject {
         // Remove existing file if it exists
         try? FileManager.default.removeItem(at: outputURL)
 
-        guard let exportSession = AVAssetExportSession(
-            asset: mixComposition,
-            presetName: AVAssetExportPresetMediumQuality) else {
+        guard
+            let exportSession = AVAssetExportSession(
+                asset: mixComposition,
+                presetName: AVAssetExportPresetMediumQuality)
+        else {
             rejecter("export_failed", "Failed to create export session", nil)
             return
         }
@@ -161,9 +181,10 @@ class VideoMerger: NSObject {
                     case .completed:
                         resolver(outputPath)
                     case .failed:
-                        rejecter("merge_failed",
-                                "Video merge failed: \(exportSession.error?.localizedDescription ?? "unknown error")",
-                                exportSession.error)
+                        rejecter(
+                            "merge_failed",
+                            "Video merge failed: \(exportSession.error?.localizedDescription ?? "unknown error")",
+                            exportSession.error)
                     case .cancelled:
                         rejecter("merge_cancelled", "Video merge was cancelled", nil)
                     default:

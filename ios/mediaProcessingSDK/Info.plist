@@ -31,6 +31,9 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+    <key>NSAppleMusicUsageDescription</key>
+    <string>This app requires access to your Music.</string>
+
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to your Photos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
