@@ -10,9 +10,6 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import Video from 'react-native-video';
 import mergeVideos from './VideoMerger';
 import RNFS from 'react-native-fs';
-import {NativeModules} from 'react-native';
-const {VideoMerger} = NativeModules;
-console.log(VideoMerger);
 const {width, height} = Dimensions.get('window');
 
 const VideoPicker = () => {
@@ -46,7 +43,7 @@ const VideoPicker = () => {
 
     try {
       // Prepare video URIs and output path
-      const videoPaths = videos.map(video => video.uri.replace('file://', ''));
+      const videoPaths = videos.map(video => decodeURIComponent(video.uri));
       const outputPath = `${RNFS.DocumentDirectoryPath}/mergedVideo.mp4`;
 
       // Call the native merge function
@@ -60,8 +57,6 @@ const VideoPicker = () => {
   return (
     <View style={styles.container}>
       {videos?.map((item, index) => {
-        console.log(item);
-
         return (
           <View key={index}>
             <Video
