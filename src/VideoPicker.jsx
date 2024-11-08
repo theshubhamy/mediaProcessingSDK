@@ -16,13 +16,13 @@ const {width, height} = Dimensions.get('window');
 const VideoPicker = () => {
   const [videos, setVideos] = useState([]);
   const [mergedVideoPath, setMergedVideoPath] = useState(null);
-  const pickVideos = () => {
+  const pickVideos = async () => {
     const options = {
       mediaType: 'video',
       selectionLimit: 0,
     };
 
-    launchImageLibrary(options, response => {
+    await launchImageLibrary(options, response => {
       if (response.didCancel) {
         console.log('User cancelled video picker');
       } else if (response.error) {
@@ -37,6 +37,7 @@ const VideoPicker = () => {
       }
     });
   };
+
   const mergeSelectedVideos = async () => {
     if (videos.length < 2) {
       return;
